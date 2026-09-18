@@ -10,11 +10,37 @@ Reinforcement Learning ашиглан автомат penetration testing аге�
 
 | Фаз | Хугацаа | Ажил | Статус |
 |-----|---------|------|--------|
-| 0 | 1 долоо хоног | Төслийн суурь, NASim wrapper, baseline агентууд | 🚧 |
-| 1 | 3–4 долоо хоног | DQN/PPO deep baselines, multi-seed үнэлгээ | ⏳ |
-| 2 | 4–6 долоо хоног | Recurrent policy, action masking, curiosity (ICM/RND) | ⏳ |
-| 3 | 4–6 долоо хоног | Generalization harness — generated топологи дээр train→test | ⏳ |
+| 0 | 1 долоо хоног | Төслийн суурь, NASim wrapper, baseline агентууд | ✅ |
+| 1 | 3–4 долоо хоног | DQN/MaskablePPO baselines, multi-seed үнэлгээ | ✅ |
+| 2 | 4–6 долоо хоног | Recurrent policy, reward shaping, curiosity (ICM/RND) | ⏳ |
+| 3 | 4–6 долоо хоног | Generalization harness — generated топологи дээр train→test | 🚧 Эхний үр дүн гарлаа |
 | 4 | сонголтоор | Stealth-aware reward, LLM hybrid, NASimEmu sim-to-real | ⏳ |
+
+## Одоогийн үр дүн (2026-09-18)
+
+**Tiny scenario (50 episode, GPU):**
+
+| Агент | Success | Mean reward | Steps (median) |
+|-------|---------|-------------|----------------|
+| random_masked | 100% | 81.9 | 114.5 |
+| bruteforce | 100% | 100.1 | 94.5 |
+| **MaskPPO (3 seed)** | **100%** | **192–193** | **6–7** |
+
+**Generalization (10 hosts, үзээгүй 5 топологи, 200k алхам):**
+
+| Сургалт | Амжилттай топологи |
+|---------|---------------------|
+| Ensemble (5 топологи) | 1/5 |
+| Single (1 топологи) | 0/5 |
+
+**Гол олдворууд:**
+1. DQN нь invalid action дээр Q-overestimation loop-д ордог — action mask
+   (MaskablePPO) нь шийдэл: 3/3 seed 100% success
+2. NASim-ийн sparse reward + ε-greedy нь seed-sensitive — DQN 1/3 seed л сурсан
+3. Ensemble сургалт нь үзээгүй топологи руу шилжихэд single-аас давуу
+   (эхний нотолгоо — цааш судлах шаардлагатай)
+4. Small scenario нь episode урт (1000 алхам) тул 150k алхамд ч суралцаагүй —
+   reward shaping эсвэл curriculum хэрэгтэй (Фаз 2)
 
 ## MDP тодорхойлолт (NASim)
 
