@@ -1,0 +1,27 @@
+# Generalization туршилтын тохиргоо
+
+# Үүсгэх scenario-ийн сүлжээний параметрүүд (train/test хоёуланд ижил —
+# хэмжээс ижил байх ёстой; зөвхөн топологи/эмуляц өөр болно)
+network:
+  num_hosts: 10
+  num_services: 2
+  num_os: 2
+  num_processes: 2
+  exploit_probs: 1.0     # deterministic (NASim-ийн анхдагч) — судалгааг цэвэрлэх
+  step_limit: 300
+
+# Сургалтын ensemble
+train:
+  k_scenarios: 5         # хэдэн өөр топологи дээр сургах
+  seed_start: 0          # train scenario seeds: 0..4
+  sampling: cycle        # cycle | random
+
+# Үнэлгээ
+eval:
+  n_eval_episodes: 20
+  # Test seeds = seed_start + 1000... — хэзээ ч сургалтад орохгүй топологи
+  test_seed_offset: 1000
+
+# Сургалтын алхам
+timesteps: 200000
+seeds: [42]
