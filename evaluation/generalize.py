@@ -36,12 +36,13 @@ from training.callbacks import PeriodicEvalCallback
 logger = logging.getLogger(__name__)
 
 
-def make_generated_env(net_cfg: dict, seed: int) -> NasimGymWrapper:
+def make_generated_env(net_cfg: dict, seed: int, reward_shaping: float = 0.0) -> NasimGymWrapper:
     """Generator-аас NASim орчин үүсгэнэ.
 
     Args:
         net_cfg: generalization_config-ийн network хэсэг
         seed: generator-ийн seed — топологийг тодорхойлно
+        reward_shaping: прогресс bonus-ийн масштаб (0 = унтраа)
     """
     import nasim
 
@@ -56,7 +57,7 @@ def make_generated_env(net_cfg: dict, seed: int) -> NasimGymWrapper:
         flat_actions=True,
         flat_obs=True,
     )
-    return NasimGymWrapper(env)
+    return NasimGymWrapper(env, reward_shaping=reward_shaping)
 
 
 def eval_on_unseen(
@@ -118,7 +119,11 @@ def run_generalization(
     timesteps = timesteps_override or cfg.get("timesteps", 200_000)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    logger.info(f"Device: {device} | {net_cfg['num_hosts']} hosts, {net_cfg['num_services']} services")
+    shaping = net_cfg.get("reward_shaping", 0.0)
+    logger.info(
+        f"Device: {device} | {net_cfg['num_hosts']} hosts, {net_cfg['num_services']} services | "
+        f"shaping={shaping}"
+    )
 
     results: dict = {}
 
@@ -127,10 +132,10 @@ def run_generalization(
     train_seeds = list(range(train_cfg["seed_start"], train_cfg["seed_start"] + k))
     logger.info(f"Ensemble: {k} scenario (seeds {train_seeds}) дээр сургаж байна...")
 
-    train_envs = [make_generated_env(net_cfg, s) for s in train_seeds]
+    train_envs = [make_generated_env(net_cfg, s, reward_shaping=shaping) for s in train_seeds]
     ensemble = EnsembleEnv(train_envs, sampling=train_cfg.get("sampling", "cycle"), seed=42)
 
-    eval_env = make_generated_env(net_cfg, train_seeds[0] + 500)  # val: өөр seed
+    eval_env = make_generated_env(net_cfg, train_seeds[0] + 500, reward_shaping=shaping)  # val: өөр seed
     ckpt_dir = _ROOT / "models" / "checkpoints" / "Gen_ensemble"
     callback = PeriodicEvalCallback(
         eval_env=eval_env, eval_freq=20_000, n_eval_episodes=10,
@@ -157,8 +162,8 @@ def run_generalization(
 
     # ── 2. Single агент (controlled baseline) ────────────────────────────────────
     logger.info(f"Single: зөвхөн seed {train_seeds[0]} дээр сургаж байна...")
-    single_env = make_generated_env(net_cfg, train_seeds[0])
-    eval_env2 = make_generated_env(net_cfg, train_seeds[0] + 500)
+    single_env = make_generated_env(net_cfg, train_seeds[0], reward_shaping=shaping)
+    eval_env2 = make_generated_env(net_cfg, train_seeds[0] + 500, reward_shaping=shaping)
     ckpt_dir2 = _ROOT / "models" / "checkpoints" / "Gen_single"
     callback2 = PeriodicEvalCallback(
         eval_env=eval_env2, eval_freq=20_000, n_eval_episodes=10,

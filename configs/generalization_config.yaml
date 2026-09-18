@@ -9,6 +9,7 @@ network:
   num_processes: 2
   exploit_probs: 1.0     # deterministic (NASim-ийн анхдагч) — судалгааг цэвэрлэх
   step_limit: 300
+  reward_shaping: 100    # прогресс bonus (0 = унтраа) — Фаз 2-ын олдвор
 
 # Сургалтын ensemble
 train:

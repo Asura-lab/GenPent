@@ -26,21 +26,26 @@ Reinforcement Learning ашиглан автомат penetration testing аге�
 | bruteforce | 100% | 100.1 | 94.5 |
 | **MaskPPO (3 seed)** | **100%** | **192–193** | **6–7** |
 
-**Generalization (10 hosts, үзээгүй 5 топологи, 200k алхам):**
+**Generalization (10 hosts, үзээгүй 5 топологи):**
 
-| Сургалт | Амжилттай топологи |
-|---------|---------------------|
-| Ensemble (5 топологи) | 1/5 |
-| Single (1 топологи) | 0/5 |
+| Сургалт | Сургалтын алхам | Амжилттай топологи |
+|---------|------------------|---------------------|
+| Ensemble, shaping=0 | 200k | 1/5 |
+| **Ensemble, shaping=100** | **300k** | **2/5** |
+| Single, shaping=0 | 200k | 0/5 |
+| Single, shaping=100 | 300k | 0/5 |
 
 **Гол олдворууд:**
 1. DQN нь invalid action дээр Q-overestimation loop-д ордог — action mask
    (MaskablePPO) нь шийдэл: 3/3 seed 100% success
 2. NASim-ийн sparse reward + ε-greedy нь seed-sensitive — DQN 1/3 seed л сурсан
-3. Ensemble сургалт нь үзээгүй топологи руу шилжихэд single-аас давуу
-   (эхний нотолгоо — цааш судлах шаардлагатай)
-4. Small scenario нь episode урт (1000 алхам) тул 150k алхамд ч суралцаагүй —
-   reward shaping эсвэл curriculum хэрэгтэй (Фаз 2)
+3. **Potential-based reward shaping** (Φ = discovery+access+root) нь small
+   scenario-г 0% → 100% болгосон (400k алхам, 280k дээр "grokking")
+4. **Shaping нь generalization-д ч тусалсан**: ensemble 1/5 → 2/5,
+   single хэзээ ч 0/5 — олон топологи + shaping хослол нь шилжилтийн урьд
+   нөхцөл
+5. Small scenario нь episode урт (1000 алхам) тул 150k алхамд ч суралцаагүй —
+   reward shaping эсвэл curriculum хэрэгтэй (Фаз 2) — ✅ шийдэгдсэн
 
 ## MDP тодорхойлолт (NASim)
 
