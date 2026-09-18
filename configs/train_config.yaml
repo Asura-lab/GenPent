@@ -1,0 +1,31 @@
+# GenPent сургалтын тохиргоо
+
+# Үнэлгээний ерөнхий тохиргоо
+eval_freq: 10000        # хэдэн алхам бүрт val үнэлгээ хийх
+n_eval_episodes: 10     # үнэлгээ бүрт хэдэн episode
+
+# DQN hyperparameter-ууд
+dqn:
+  learning_rate: 0.0001
+  buffer_size: 100000
+  batch_size: 128
+  learning_starts: 1000
+  train_freq: 4
+  gradient_steps: 1
+  target_update_interval: 1000
+  exploration_fraction: 0.3
+  exploration_final_eps: 0.05
+  gamma: 0.99
+
+# MaskablePPO hyperparameter-ууд (sb3-contrib)
+maskppo:
+  learning_rate: 0.0003
+  n_steps: 2048
+  batch_size: 512
+  n_epochs: 10
+  gamma: 0.99
+  gae_lambda: 0.95
+  clip_range: 0.2
+  ent_coef: 0.01
+  vf_coef: 0.5
+  max_grad_norm: 0.5

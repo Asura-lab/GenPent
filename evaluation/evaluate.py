@@ -11,6 +11,18 @@ from nasim.envs.utils import AccessLevel
 logger = logging.getLogger(__name__)
 
 
+def _unwrap_nasim(env: Any) -> Any:
+    """Wrapper-үүдийг арчилж, суурин NASimEnv-ийг олно.
+
+    gymnasium Wrapper зарим атрибутыг forwarding хийдэггүй тул
+    network/current_state/goal_reached-ийг шууд NASimEnv-ээс авна.
+    """
+    inner = env
+    while not hasattr(inner, "network") and hasattr(inner, "env"):
+        inner = inner.env
+    return inner
+
+
 def _network_summary(env: Any) -> dict:
     """Episode-ийн төгсгөлд сүлжээний төлөвөөс статистик гаргана."""
     net = env.network
@@ -59,6 +71,7 @@ def evaluate_agent(
         access_ratio, sensitive_owned_ratio, n_discovered, n_accessed
     """
     records: list[dict] = []
+    inner = _unwrap_nasim(env)
 
     for ep in range(n_episodes):
         obs, info = env.reset(seed=seed + ep)
@@ -74,13 +87,13 @@ def evaluate_agent(
             total += float(reward)
             steps += 1
 
-        stats = _network_summary(env)
+        stats = _network_summary(inner)
         records.append(
             {
                 "episode": ep,
                 "reward": total,
                 "steps": steps,
-                "success": bool(env.goal_reached()),
+                "success": bool(inner.goal_reached()),
                 **stats,
             }
         )

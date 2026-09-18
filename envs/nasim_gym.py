@@ -67,6 +67,14 @@ class NasimGymWrapper(Wrapper):
 
     # ── Action mask ───────────────────────────────────────────────────────────────
 
+    def action_masks(self) -> np.ndarray:
+        """sb3-contrib MaskablePPO-ийн хүлээх нэрээр mask буцаана."""
+        return self._action_mask()
+
+    def get_action_mask(self) -> np.ndarray:
+        """NASim-ийн интерфейтэй нийцүүлэх public mask — агентууд шууд дуудна."""
+        return self._action_mask()
+
     def _action_mask(self) -> np.ndarray:
         """Дараагийн алхамд "өдөөж болох" action-уудын mask.
 

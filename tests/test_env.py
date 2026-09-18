@@ -80,9 +80,14 @@ def test_invalid_action_penalty():
 
 
 def test_reproducibility(tiny_env):
-    """Ижил seed → ижил episode траектор (reward дараалал)."""
+    """Ижил seed → ижил episode траектор (reward дараалал).
+
+    Анхаар: NASim exploit-ийн санамсаргүй байдалд global np.random ашигладаг тул
+    np.random.seed-ийг episode бүрт дахин тохируулах шаардлагатай.
+    """
     rewards = []
     for run in range(2):
+        np.random.seed(7)  # NASim-ийн global randomness
         obs, info = tiny_env.reset(seed=7)
         total = 0.0
         rng = np.random.default_rng(99)
