@@ -1,0 +1,13 @@
+# GenPent үнэлгээний тохиргоо
+default:
+  scenario: tiny
+  n_episodes: 50
+  seed: 42
+  step_limit: null        # null = scenario-ийн step_limit ашиглана
+  fully_obs: false
+
+# Baseline харьцуулалтад хэрэглэх scenario-ууд
+baselines:
+  scenarios: [tiny, small]
+  n_episodes: 20
+  seed: 42

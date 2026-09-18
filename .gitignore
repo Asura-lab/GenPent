@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Туршилт, хялбаршуулсан log
+.pytest_cache/
+*.log
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Үр дүн (их хэмжээний, дахин үүсгэх боломжтой)
+results/
+models/checkpoints/*
+!models/checkpoints/.gitkeep
+
+# Оркчны нууц
+.env
+*.whl
