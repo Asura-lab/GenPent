@@ -44,6 +44,7 @@ def train_maskppo(
     config_path: str = "configs/train_config.yaml",
     run_name: str | None = None,
     ent_coef: float | None = None,
+    reward_shaping: float = 0.0,
 ) -> tuple[MaskablePPO, dict]:
     """MaskablePPO загварыг NASim scenario дээр сургана.
 
@@ -55,6 +56,7 @@ def train_maskppo(
         config_path: сургалтын тохиргооны файл
         run_name: MLflow run нэр (None бол автомат)
         ent_coef: entropy coefficient override (exploration sweep-д)
+        reward_shaping: прогресс bonus-ийн масштаб (0 = унтраа, жишээ: 50.0)
 
     Returns:
         (сургагдсан загвар, эцсийн үнэлгээний summary)
@@ -70,10 +72,12 @@ def train_maskppo(
 
     # ── Орчнууд ──────────────────────────────────────────────────────────────────
     env = NasimGymWrapper(
-        __import__("nasim").make_benchmark(scenario, flat_actions=True, flat_obs=True)
+        __import__("nasim").make_benchmark(scenario, flat_actions=True, flat_obs=True),
+        reward_shaping=reward_shaping,
     )
     eval_env = NasimGymWrapper(
-        __import__("nasim").make_benchmark(scenario, flat_actions=True, flat_obs=True)
+        __import__("nasim").make_benchmark(scenario, flat_actions=True, flat_obs=True),
+        reward_shaping=reward_shaping,
     )
 
     # ── Загвар ───────────────────────────────────────────────────────────────────
@@ -119,6 +123,7 @@ def train_maskppo(
                 "device": str(model.device),
                 "gpu_name": torch.cuda.get_device_name(0) if device == "cuda" else "cpu",
                 "n_params": n_params,
+                "reward_shaping": reward_shaping,
                 **{f"mppo_{k}": v for k, v in mppo_cfg.items()},
             }
         )
@@ -163,6 +168,8 @@ if __name__ == "__main__":
     parser.add_argument("--config", default="configs/train_config.yaml")
     parser.add_argument("--run-name", default=None)
     parser.add_argument("--ent-coef", type=float, default=None)
+    parser.add_argument("--shaping", type=float, default=0.0,
+                        help="Прогресс bonus-ийн масштаб (0 = унтраа, жишээ: 50)")
     args = parser.parse_args()
 
     seeds = args.seeds if args.seeds is not None else [args.seed]
@@ -174,7 +181,9 @@ if __name__ == "__main__":
             seed=s,
             device_request=args.device,
             config_path=args.config,
+            run_name=args.run_name,
             ent_coef=args.ent_coef,
+            reward_shaping=args.shaping,
         )
         logger.info(
             f"Дууслаа: {summary['run_name']} | "
